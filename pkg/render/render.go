@@ -3,6 +3,7 @@ package render
 import (
 	"bytes"
 	"fmt"
+	"github.com/ahmedkhaeld/go-web/pkg/config"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,22 +14,34 @@ import (
 // some time we will create our own functions and pass them to the template
 var functions = template.FuncMap{}
 
+// app pointer will have access to the configuration to access TemplateCache or other AppConfig fields
+var app *config.AppConfig
+
+// NewTemplates  set app to the AppConfig when it is called to use the TemplateCache
+func NewTemplates(a *config.AppConfig) {
+	app = a
+}
 func RenderTemplate(w http.ResponseWriter, tmpl string) {
 
-	templateCache, err := CreateTemplateCache()
-	if err != nil {
-		log.Fatal(err)
+	var templateCache map[string]*template.Template
+	if app.UseCache {
+		// get the template cache from the app config
+		templateCache = app.TemplateCache
+	} else {
+		templateCache, _ = CreateTemplateCache()
+
 	}
+
 	theTemplate, ok := templateCache[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("could not get the template from teh templateCache")
 	}
 
 	aBuffer := new(bytes.Buffer)
 
 	_ = theTemplate.Execute(aBuffer, nil)
 
-	_, err = aBuffer.WriteTo(w)
+	_, err := aBuffer.WriteTo(w)
 	if err != nil {
 		fmt.Println("Error writing to the browser", err)
 	}
