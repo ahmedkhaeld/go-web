@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/ahmedkhaeld/go-web/pkg/config"
+	"github.com/ahmedkhaeld/go-web/pkg/models"
 	"github.com/ahmedkhaeld/go-web/pkg/render"
 	"net/http"
 )
@@ -27,10 +28,16 @@ func NewHandlers(r *Repository) {
 }
 
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, "home.page.tmpl")
+	render.RenderTemplate(w, "home.page.tmpl", &models.TemplateData{})
 }
 
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, "about.page.tmpl")
+	// Also, might perform business logic, which gives some data, then send the data to the tmpl
+
+	stringMap := make(map[string]string)
+	stringMap["test"] = "send data to template!"
+	render.RenderTemplate(w, "about.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+	})
 
 }

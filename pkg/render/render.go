@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ahmedkhaeld/go-web/pkg/config"
+	"github.com/ahmedkhaeld/go-web/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -21,7 +22,11 @@ var app *config.AppConfig
 func NewTemplates(a *config.AppConfig) {
 	app = a
 }
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	return td
+}
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 
 	var templateCache map[string]*template.Template
 	if app.UseCache {
@@ -39,7 +44,8 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 
 	aBuffer := new(bytes.Buffer)
 
-	_ = theTemplate.Execute(aBuffer, nil)
+	td = AddDefaultData(td)
+	_ = theTemplate.Execute(aBuffer, td)
 
 	_, err := aBuffer.WriteTo(w)
 	if err != nil {
