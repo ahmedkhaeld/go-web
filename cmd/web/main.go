@@ -5,15 +5,32 @@ import (
 	"github.com/ahmedkhaeld/go-web/pkg/config"
 	"github.com/ahmedkhaeld/go-web/pkg/handlers"
 	"github.com/ahmedkhaeld/go-web/pkg/render"
+	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"
+	"time"
 )
 
 const portNumber = ":8080"
 
+// app entry point to access AppConfig
+var app config.AppConfig
+
+// declare the session var
+var session *scs.SessionManager
+
 func main() {
-	// app entry point to access AppConfig
-	var app config.AppConfig
+	// change this to true when in production environment
+	app.InProduction = false
+
+	// initialize the session
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.Secure = app.InProduction
+	session.Cookie.SameSite = http.SameSiteLaxMode
+
+	app.Session = session
 
 	templateCache, err := render.CreateTemplateCache()
 	if err != nil {
@@ -29,12 +46,8 @@ func main() {
 
 	render.NewTemplates(&app)
 
-	//http.HandleFunc("/", handlers.Repo.Home)
-	//http.HandleFunc("/about", handlers.Repo.About)
-
 	fmt.Println(fmt.Sprintf("Starting the application %v", portNumber))
 
-	//_ = http.ListenAndServe(portNumber, nil)
 	srv := &http.Server{
 		Addr:    portNumber,
 		Handler: routes(&app),
